@@ -17,6 +17,8 @@ system fonts offline.
 |------|---------|
 | `index.html` | The app — Hebrew/RTL, primary deliverable. GitHub Pages serves this automatically. |
 | `meibutsu-finder-en.html` | English-language version, kept as reference/backup. |
+| `photos/` | Card photos, one folder per prefecture (see **Photos** below). |
+| `CHANGELOG.md` | What changed and when (Hebrew). |
 | `README.md` | This file. |
 | `.gitignore` | Standard OS/editor ignores. |
 
@@ -96,6 +98,24 @@ objects shaped like:
 is appended; nothing already in place is removed or overwritten. Please keep to
 that when extending the data, and re-check that every item keeps all eight
 fields.
+
+---
+
+## Photos
+
+Each photo lives at `photos/<prefecture-id>/<item-slug>.webp` (960×640), with a
+smaller `<item-slug>-480.webp` (480×320) next to it; the browser picks the size
+that fits the screen. Every photo is pre-cropped to 3:2 around its subject, so
+the card frame never crops it again.
+
+An item shows a photo when its data entry has
+`img: "photos/<prefecture-id>/<item-slug>.webp"`. Items without `img` show a
+plate with the Japanese name in the same frame size, so the grid stays even. If
+a photo file is missing, the card falls back to that plate on its own.
+
+122 items currently have photos: Tokyo, Kanagawa, Kyoto, Osaka, Nara, Hiroshima,
+Hokkaido and Aomori. To preview locally with photos, open `index.html` from this
+folder (the `photos/` folder must sit next to it).
 
 ---
 
