@@ -302,15 +302,7 @@
     font-size:38px; white-space:nowrap; opacity:.8;
   }
   .grid.with-photos .card-body{padding-top:16px;}
-  /* "All" view: one section per category, souvenirs first */
-  .cat-head{
-    grid-column:1/-1; display:flex; align-items:baseline; gap:10px;
-    margin:26px 0 0; padding-bottom:8px; border-bottom:2px solid var(--cat);
-  }
-  .cat-head:first-child{margin-top:0;}
-  .cat-head h3{margin:0; font-size:22px; font-weight:700; color:var(--cat-ink);}
-  .cat-head .jp{font-family:"Shippori Mincho",serif; font-size:15px; color:var(--cat-ink); opacity:.7;}
-  .cat-head .ct{margin-inline-start:auto; font-size:13px; color:var(--ink-soft);}
+  .c-tag{display:none;}
   .card-body{padding:18px 20px 22px;}
   .card h3{
     font-family:"Assistant","Shippori Mincho",serif; font-weight:600;
@@ -389,6 +381,55 @@
     .result-title{font-size:clamp(24px,7vw,32px);}
     .result-title .jp{margin-right:8px;}
     .foot{flex-direction:column; align-items:flex-start; gap:8px;}
+  }
+
+  /* ---------- phone: compact rows, details open in a bottom sheet ---------- */
+  @media (max-width:600px){
+    .grid{gap:10px;}
+    .grid .card{display:grid; grid-template-columns:auto 1fr; align-items:center; cursor:pointer;}
+    .grid .card .card-media,
+    .grid.with-photos .card .card-media{
+      width:96px; height:96px; aspect-ratio:auto; align-self:start;
+      margin:10px; margin-inline-end:0; border:0; border-radius:10px;
+    }
+    .grid .card .m-cat,
+    .grid .card .card-media.has-img .m-jp{display:none;}
+    .grid .card .card-media:not(.has-img) .m-jp{
+      left:50%; top:50%; bottom:auto; transform:translate(-50%,-50%);
+      width:84px; font-size:15px; line-height:1.15; text-align:center; white-space:normal; opacity:.85;
+    }
+    .grid .card .card-body,
+    .grid.with-photos .card .card-body{padding:10px 12px 12px; padding-inline-end:28px;}
+    .grid .card .c-tag{display:block; font-size:12px; font-weight:700; color:var(--cat-ink); margin-bottom:1px;}
+    .grid .card h3{font-size:17.5px;}
+    .grid .card .card-desc{
+      margin-top:4px; font-size:13.5px; line-height:1.45;
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+    }
+    .grid .card .where{display:none;}
+    .grid .card::after{
+      content:"‹"; position:absolute; left:12px; top:50%; transform:translateY(-50%);
+      font-size:24px; line-height:1; color:var(--ink-faint);
+    }
+    html.is-mobile .grid .card:hover{transform:none;}
+  }
+  .sheet{position:fixed; inset:0; z-index:60; visibility:hidden;}
+  .sheet.on{visibility:visible;}
+  .sheet-backdrop{position:absolute; inset:0; background:rgba(20,16,8,.45); opacity:0; transition:opacity .25s ease;}
+  .sheet.on .sheet-backdrop{opacity:1;}
+  .sheet-panel{
+    position:absolute; left:0; right:0; bottom:0; max-height:88vh; overflow-y:auto;
+    background:var(--washi); border-radius:18px 18px 0 0;
+    transform:translateY(100%); transition:transform .28s ease;
+    padding-bottom:env(safe-area-inset-bottom, 0px); box-shadow:0 -6px 24px rgba(20,16,8,.25);
+  }
+  .sheet.on .sheet-panel{transform:none;}
+  .sheet .card{opacity:1; transform:none; animation:none; border:0; box-shadow:none; border-radius:18px 18px 0 0;}
+  .sheet .card .card-media.has-img{height:auto; aspect-ratio:3/2; margin:10px 10px 0; border-radius:12px;}
+  .sheet-close{
+    position:absolute; top:16px; left:16px; z-index:5; width:38px; height:38px; border-radius:50%;
+    border:0; background:rgba(250,246,236,.95); color:var(--ink); font-size:22px; line-height:1;
+    box-shadow:0 1px 4px rgba(20,16,8,.25); cursor:pointer;
   }
 
   /* ---------- very small phones ---------- */
@@ -610,7 +651,7 @@ const PREF = [
       where:"In season (early summer) at markets, fruit parlours, and as premium gifts.",
       heWhere:"בעונה, בתחילת הקיץ: בשווקים, בבתי קפה של פירות ובחנויות מתנות. אפשר לטעום פרוסה ב-Sapporo Nijo Market.",
       img:"photos/hokkaido/yubari-melon.webp" },
-    { name:"Hokkaido Soft Cream", jp:"ソフトクリーム", cat:"drink", he:"גלידת סופט של הוקאידו",
+    { name:"Hokkaido Soft Cream", jp:"ソフトクリーム", cat:"sweets", he:"גלידת סופט של הוקאידו",
       desc:"Ultra-rich soft-serve made from the island's celebrated dairy — a near-mandatory travel ritual.",
       heDesc:"גלידת סופט מהחלב של הוקאידו, עשירה במיוחד. כמעט כל מטייל עוצר לאחת.",
       where:"Farm stands and parlours in Furano and Biei, and across Hokkaidō.",
@@ -4516,8 +4557,42 @@ function bidi(s){
    it removes itself and the card falls back to the Japanese name plate. */
 function photoTag(it){
   const small = it.img.replace(/\.webp$/, "-480.webp");
-  return `<img src="${it.img}" srcset="${small} 480w, ${it.img} 960w" sizes="(max-width: 600px) calc(100vw - 60px), 340px" width="960" height="640" alt="${it.he||it.name}" loading="lazy" decoding="async" onload="this.classList.add('ready')" onerror="this.parentNode.classList.remove('has-img'); this.remove()">`;
+  return `<img src="${it.img}" srcset="${small} 480w, ${it.img} 960w" sizes="(max-width: 600px) 96px, 340px" width="960" height="640" alt="${it.he||it.name}" loading="lazy" decoding="async" onload="this.classList.add('ready')" onerror="this.parentNode.classList.remove('has-img'); this.remove()">`;
 }
+
+/* Phones: tapping a compact row opens the full card in a bottom sheet */
+const sheet = document.createElement("div");
+sheet.className = "sheet";
+sheet.innerHTML = '<div class="sheet-backdrop"></div><div class="sheet-panel" role="dialog" aria-modal="true"><button class="sheet-close" aria-label="סגירה">×</button><div class="sheet-body"></div></div>';
+document.body.appendChild(sheet);
+function openSheet(card){
+  const body = sheet.querySelector(".sheet-body");
+  const c = card.cloneNode(true);
+  c.removeAttribute("tabindex");
+  c.querySelectorAll("img").forEach(im => { im.sizes = "100vw"; im.loading = "eager"; });
+  body.replaceChildren(c);
+  c.querySelectorAll("img").forEach(im => { if(im.complete && im.naturalWidth) im.classList.add("ready"); });
+  sheet.querySelector(".sheet-panel").scrollTop = 0;
+  sheet.classList.add("on");
+  document.documentElement.style.overflow = "hidden";
+}
+function closeSheet(){
+  sheet.classList.remove("on");
+  document.documentElement.style.overflow = "";
+}
+sheet.addEventListener("click", e => {
+  if(e.target.closest(".sheet-close") || e.target.classList.contains("sheet-backdrop")) closeSheet();
+});
+document.addEventListener("keydown", e => { if(e.key === "Escape") closeSheet(); });
+const isPhone = () => window.matchMedia && window.matchMedia("(max-width: 600px)").matches;
+document.addEventListener("click", e => {
+  const card = e.target.closest(".grid .card");
+  if(card && isPhone()) openSheet(card);
+});
+document.addEventListener("keydown", e => {
+  const card = e.target.closest && e.target.closest(".grid .card");
+  if(card && isPhone() && (e.key === "Enter" || e.key === " ")){ e.preventDefault(); openSheet(card); }
+});
 
 function cityHit(pid, q){
   if(!q) return null;
@@ -4645,13 +4720,14 @@ function renderResults(p){
   const cardHTML = (it,i) => {
     const c = CATS[it.cat];
     const media = `<span class="tint"></span>` + (it.img ? photoTag(it) : ``);
-    return `<article class="card" style="--cat:${c.color}; --cat-ink:${c.ink}; animation-delay:${Math.min(i*45,360)}ms">
+    return `<article class="card" tabindex="0" style="--cat:${c.color}; --cat-ink:${c.ink}; animation-delay:${Math.min(i*45,360)}ms">
         <div class="card-media${it.img ? ' has-img' : ''}">
           ${media}
           <span class="m-cat"><span class="sw"></span>${c.he}</span>
           <span class="m-jp mincho">${it.jp}</span>
         </div>
         <div class="card-body">
+          <span class="c-tag">${c.he}</span>
           <h3>${it.he||it.name}${it.he?`<span class="h3-en">${it.name}</span>`:``}</h3>
           <p class="card-desc">${bidi(it.heDesc||it.desc)}</p>
           <div class="where">
@@ -4664,19 +4740,10 @@ function renderResults(p){
         </div>
       </article>`;
   };
-  let cards = "";
-  if(currentCat === "all"){
-    let i = 0;
-    Object.keys(CATS).forEach(k => {
-      const list = p.items.filter(it => it.cat === k);
-      if(!list.length) return;
-      const c = CATS[k];
-      cards += `<div class="cat-head" style="--cat:${c.color}; --cat-ink:${c.ink}"><h3>${c.he}</h3><span class="jp">${c.jp}</span><span class="ct">${list.length}</span></div>`;
-      cards += list.map(it => cardHTML(it, i++)).join("");
-    });
-  } else {
-    cards = p.items.filter(it => it.cat === currentCat).map((it,i) => cardHTML(it,i)).join("");
-  }
+  const shown = currentCat === "all"
+    ? Object.keys(CATS).flatMap(k => p.items.filter(it => it.cat === k))
+    : p.items.filter(it => it.cat === currentCat);
+  const cards = shown.map((it,i) => cardHTML(it,i)).join("");
 
   results.innerHTML =
     `<div class="result-head">
