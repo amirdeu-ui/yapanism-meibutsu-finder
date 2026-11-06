@@ -119,6 +119,15 @@ folder (the `photos/` folder must sit next to it).
 
 ---
 
+## Map
+
+The clickable map of Japan uses prefecture outlines from
+[Natural Earth](https://www.naturalearthdata.com/) (public domain — free for
+commercial use, no attribution required), simplified and embedded in `index.html`
+as SVG paths. Okinawa is shown as an inset of the main island only.
+
+---
+
 ## Technical notes
 
 - **Single self-contained file** — all CSS and JS are inline in `index.html`.
