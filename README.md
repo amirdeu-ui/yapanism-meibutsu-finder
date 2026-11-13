@@ -113,7 +113,7 @@ An item shows a photo when its data entry has
 plate with the Japanese name in the same frame size, so the grid stays even. If
 a photo file is missing, the card falls back to that plate on its own.
 
-155 items currently have photos: Tokyo, Kanagawa, Kyoto, Osaka, Nara, Hiroshima,
+156 items currently have photos: Tokyo, Kanagawa, Kyoto, Osaka, Nara, Hiroshima,
 Hokkaido, Aomori, Fukuoka and Okinawa. To preview locally with photos, open `index.html` from this
 folder (the `photos/` folder must sit next to it).
 
